@@ -1,4 +1,5 @@
 ; @Mizaelgalvez
+; ingresamos cualquier cantidad de argumentos y las imprimira cada uno
 
 %include 'funciones_basicas.asm'
 

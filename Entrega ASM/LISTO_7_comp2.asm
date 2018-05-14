@@ -1,4 +1,6 @@
 ; @Mizaelgalvez
+; recibe 2 argumentos y compara
+; imprimiendo el menor
 
 %include 'funciones_basicas.asm'
 
@@ -10,7 +12,7 @@ _start:
 
 
   sigArg:
-    cmp ECX, 0x03     ; comparamos si en eax es igual a xero, si es asi debajo saltamos a no mas Argumentos para salir
+    cmp ECX, 0x03     ; comparamos si numero de argumentos con 3 , si es mayor salimos
     jl Nocumple    ; saltamos a no mas argumentos
     pop EAX
     pop EAX      ; regresamos el stack anterior
@@ -22,9 +24,8 @@ _start:
 
 _comparar:
   cmp EDX, EAX
-  jl _menor
-  cmp EDX, EAX
-  jg _menor
+  jle _menor
+  call iprintLF
   call quit
 
 

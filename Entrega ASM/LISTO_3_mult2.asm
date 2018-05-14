@@ -1,4 +1,5 @@
 ; @Mizaelgalvez
+; ejecutar con 2 argumentos numericos
 
 %include 'funciones_basicas.asm'
 
