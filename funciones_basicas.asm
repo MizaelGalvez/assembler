@@ -189,42 +189,41 @@ copystring:
     ret
 
 
-    ;; ------------------------------------
-    ;; itoa recibe un entero
-    ;; y lo convierte en cadena de texto
-    ;; recibe entero en EAX
-    ;; recibe direccion de cadena en ESI
-    ;; ------------------------------------
-    itoa:
-
-    push ebx ; preservamos ebx
-    push ecx ; preservamos ecx
-    push edx ; preservamos edx
-    push esi ; preservamos esi
-
-    mov ebx, 10 ;vamos a dividir por 10
-    mov ecx, 0 ;nuestro contador en 0
-    push ecx   ;mandamos 0 al stack (fin de cadena)
-    inc ecx
-    .dividir:
-    inc ecx      ;incrementamos nuestro contador
-    mov edx, 0     ; limpiamos EDX para dividir
-    idiv ebx      ;dividimos EAX entre EBX
-    add edx, 0x30 ;agregamos 48 (para obtener digitos de 0-9 en ASCII)
-    push edx ;enviamos el residuo al stack
-    cmp eax, 0 ;checamos si el residuo es 0
-    je .fuera ;si es 0, salimos del ciclo
-    jmp .dividir ;seguimos obteniendo digitos
-    .fuera:
-    mov ebx,0 ;limpiamos ebx
-.guardar:
-  pop eax  ;traemos un digito del stack
-  mov byte[esi+ebx],al  ;movemos el digito a memoria
-  inc ebx ;incrementamos contador
-  cmp ebx,ecx ;comparamos con la cuenta de digitos
-  jne .guardar ;si no son iguales, obtenemos otro digito del stack
-  pop esi ; restauramos esi
-  pop edx ; restauramos edx
-  pop ecx ; restauramos ecx
-  pop ebx ; restauramos ebx
-  ret ; y regresamos
+;; ------------------------------------
+;; itoa recibe un entero
+;; y lo convierte en cadena de texto
+;; recibe entero en EAX
+;; recibe direccion de cadena en ESI
+;; ------------------------------------
+itoa:
+push ebx  ; preservamos ebx
+push ecx  ; preservamos ecx
+push edx  ; preservamos edx
+push esi  ; preservamos esi
+mov ebx, 10     ;vamos a dividir por 10
+mov ecx,  0     ;nuestro contador en  0
+push ecx        ;mandamos 0 al stack (fin de cadena)
+inc ecx
+.dividirI:
+inc ecx         ;incrementamos nuestro contador
+mov edx,  0     ; limpiamos EDX para dividir
+idiv ebx         ;dividimos EAX entre EBX
+add edx, 0x30   ;agregamos 48 (para obtener digitos de 0-9 en ASCII)
+push edx        ;enviamos el residuo al stack
+cmp eax, 0      ;checamos si el residuo es 0
+je .fueraI       ;si es 0, salimos del ciclo
+jmp .dividirI    ;seguimos obteniendo digitos
+.fueraI:
+mov ebx,0       ;limpiamos ebx
+.guardarI:
+pop eax         ;traemos un digito del stack
+mov byte[esi+ebx],al   ;movemos el digito a memoria
+inc ebx         ;incrementamos contador
+cmp ebx,ecx     ;comparamos con la cuenta de digitos
+jne .guardarI    ;si no son iguales, obtenemos otro digito del stack
+pop esi         ; restauramos esi
+pop edx         ; restauramos edx
+pop ecx         ; restauramos ecx
+pop ebx
+; restauramos ebx
+ret             ; y regresamos

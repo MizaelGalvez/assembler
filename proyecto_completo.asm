@@ -1,4 +1,5 @@
 ;Github @MizaelGalvez
+
 %include 'funciones_basicas.asm'
 
 ;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,9 +35,9 @@ section .data
   Digito1 dd 0
   Digito2 dd 0
   Digito3 dd 0
-  Condicion_Entrada db "No cumple con las condiciones de ejecucion > ",0xA,"SALIENDO   >>>   Debe ingresar el nombre del archivo con los Numeros ",0x0
-  Error_Archivo db "Error en la Lectura del Archico: ",0xA,"Cancelando Ejecucion   >>> es posible ese Archivo no Exista",0x0
-  Gracias db "Gracias, Fue un Placer: ",0xA,"Saliendo :)   >>>",0x0
+  Condicion_Entrada db 0xA,"No cumple con las condiciones de ejecucion > ",0xA,"SALIENDO   >>>   Debe ingresar el nombre del archivo con los Numeros escribalo con todo y extencion",0xA,0x0
+  Error_Archivo db 0xA,"Error en la Lectura del Archico: ",0xA,"Cancelando Ejecucion   >>> es posible ese Archivo no Exista, recuerde incluir la extencion",0xA,0x0
+  Gracias db 0xA,"Gracias, Fue un Placer: ",0xA,"Saliendo :)   >>>",0xA,0x0
   Ingresa_Entero db "Numero entero> " , 0x0
   Ingresa_Nombre_Archivo db "Nombre de archivo a guardar?> ", 0x0
   Menu db  "*** MENU ***",0xA,"1. Agregar dato",0xA,"2. Generar línea",0xA,"3. Generar curva",0xA,"4. Mostrar datos (imprimir)",0xA,"5. Guardar archivo",0xA,"0. Salir",0xA,"************",0xA,0xA,0xA,0xA,0xA,0x0
@@ -64,8 +65,9 @@ _start:
 
 ;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////bloque para recibir el nombre de archivo y leer el contenido del mismo ///////////////////////
-
 ;BLOQUE UNO
+;BLOQUE DOS                                           ;realize el ploque dos aqui mismo
+
 ;ingresar con un argumento extra, que debe ser el archivo a Abrir
   pop eax   ; ACTUALMENTE SE ENCUENTRA EL NOMBRE DEL ARCHIVO A ABRIR (CONFIRMADO)
 
@@ -88,13 +90,12 @@ _start:
 
 	mov eax,buffer_archivo ;ACTUALMENTE TENEMOS EL CONTENIDO DEL ARCHIVO EN EAX (CONFIRMADO)
 
-;BLOQUE DOS                                           ;realize el ploque dos aqui mismo
 ;solo leer y guardar en buffer el contenido           ;fue mas simple de lo que imagine
 
 ;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;////////////////////////////////Guardar el buffer en el arreglo_datos_recibidos///////////////////////////////////////
-
 ;BLOQUE TRES
+
 ; copiar cada linea a al arreglo_datos_recibidos (como dato ay que comparar con el salto de linea)
   mov esi,arreglo_datos_recibidos
   ;mov ecx,3
@@ -109,6 +110,9 @@ _ciclo:
   ;inc eax
   ;dec ecx
 
+  ;_sigNumero:
+  ;  inc eax
+  ;  jmp _ciclo
   mov bl,byte[eax]
   mov [Digito1], bl
   inc edx
@@ -129,34 +133,36 @@ _ciclo:
   dec ecx
 
   cmp ecx, 0
-  jz _Limpiando  ; ya tenemos en arreglo_datos_recibidos los caracteres del archivo, aun falta convertorlos en entero
+  jz _Guardando  ; ya tenemos en arreglo_datos_recibidos los caracteres del archivo, aun falta convertorlos en entero
+;//////////guardando registros///////////
+_Guardando:
+  mov eax, Digito1
+  call atoi
+  mov [esi+0*4],eax
+  mov eax, Digito2
+  call atoi
+  mov [esi+1*4],eax
+  mov eax, Digito3
+  call atoi
+  mov [esi+2*4],eax
 
-;_sigNumero:
-;  inc eax
-;  jmp _ciclo
-
-
-;//////////Limpiando registros///////////
-_Limpiando:
-mov eax, Digito1
-call atoi
-mov [esi+0*4],eax
-mov eax, Digito2
-call atoi
-mov [esi+1*4],eax
-mov eax, Digito3
-call atoi
-mov [esi+2*4],eax
+  mov edi, 0
+  mov esi, arreglo_datos_recibidos
   mov eax, 0
   mov ebx, 0
   mov ecx, 0
   mov edx, 0
-  mov esi, 0
+  mov [Digito1], eax
+  mov [Digito2], eax
+  mov [Digito3], eax
+
   jmp _Menu
+
+; 1 punto ------------- recibir numeros de un archivo recibido el nombre por argumentos
 ;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;/////////////////////////////////////Mandar a imprimir el menu y realizar las Comparaciones////////////////////////////////////////////////////////////////
+;BLOQUE CUATRO
 
-  ;BLOQUE CUATRO
   ; mostrar el siguiente menu en pantalla
   ;   *** MENU ***
   ; 1. Agregar dato
@@ -177,8 +183,8 @@ _Menu:
   mov ecx, Numero_Recibido_Menu
   mov edx, len_Numero_Recibido_Menu
   call LeerTexto
-  mov eax, Espacio
-  call sprintLF
+  ;mov eax, Espacio
+  ;call sprintLF
   call _Comparaciones
 
 _Comparaciones:
@@ -205,6 +211,7 @@ _Comparaciones:
 
   jmp _Menu
 
+;1 punto --------Menu hecho
 ;////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;/////////////////////////////////////Bloques de ejecucion////////////////////////////////////////////////////////////////
 
@@ -232,16 +239,31 @@ _Comparaciones:
 
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;BLOQUE 4.1
 _Nuevo_Numero:
+  mov edi, [Digito3]
+  cmp edi, 3                 ;comparacion para que ya no guarde mas numeros en el arreglo
+  je _Menu
   mov eax, Ingresa_Entero
   call sprint
   mov ecx, Numero_Recibido_Menu
   mov edx, len_Numero_Recibido_Menu
   call LeerTexto
+  mov eax, ecx
+
+  call atoi
+  mov [esi+edi*4],eax
+
+  inc edi
+  mov [Digito3], edi
+
 
   call _Menu  ;regresa aun sin hacer nada
+
+; 5 puntos, agregar datos nuevos al arreglo, iniciando con la primer casilla
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;BLOQUE 4.2
 _Funcion_Lineal:
   mov esi, arreglo_datos_recibidos
   mov edi, arreglo_operacion_linea
@@ -254,7 +276,7 @@ _Funcion_Lineal:
     imul eax, 4
     add eax, 3
     ;////////////////////////////////////////////////////////////////////////////
-    mov [edi+edx*4],eax
+    mov [edi+ecx*4],eax
     inc ecx               ;incrementamos indice de array
     dec edx               ;decrementamos contador
     cmp edx,0             ;llegamos a 0?
@@ -263,8 +285,11 @@ _Funcion_Lineal:
     mov eax, Espacio
     call sprintLF
     call _Menu
+
+; 5 puntos, generar resultados de una operacion lineal y guardarlos en otro arreglo
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;BLOQUE 4.3
 _Funcion_Curva:
   mov esi, arreglo_datos_recibidos
   mov edi, arreglo_operacion_curva
@@ -273,20 +298,40 @@ _Funcion_Curva:
 
   ciclo_curva:
     mov eax,[esi+ecx*4]  ;Traemos a EAX el numero del arreglo recibido
-    ;/////  x^3+4x^2    CAMBIE LA FORMULA... No me salieron los negativos   /////
     mov ebx, eax
     imul eax, eax
     imul eax, ebx
+    ;call iprintLF
     mov [Digito1], eax
     mov eax, ebx
-    imul eax, 4
+    ; x^3
+
     imul eax, eax
+    imul eax, 4
+    ;call iprintLF
     mov [Digito2], eax
+    ;4x^2
+
+
+    mov eax, ebx
+    imul eax, 6
+    sub eax, 24
+    ;call iprintLF
+    mov [Digito3], eax
+    ;6x-24
+
     mov eax, [Digito1]
-    mov ebx, [Digito2]
+    mov ebx, [Digito3]
     add eax,ebx
+    ; sumamos   x^3 + 6x-24
+
+    mov ebx, [Digito2]
+    sub eax, ebx
+    ; restamos la operacion de 4x^2
+
+
     ;////////////////////////////////////////////////////////////////////////////
-    mov [edi+edx*4],eax
+    mov [edi+ecx*4],eax
     inc ecx               ;incrementamos indice de array
     dec edx               ;decrementamos contador
     cmp edx,0             ;llegamos a 0?
@@ -295,8 +340,11 @@ _Funcion_Curva:
     mov eax, Espacio
     call sprintLF
     call _Menu
+
+; 5 puntos, generar resultados pasando por una operacion cubica y guardarlos en un arreglo
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;BLOQUE 4.4
 _Imprimir_Tablas:
   mov esi, arreglo_datos_recibidos
   mov edi, arreglo_operacion_linea
@@ -311,30 +359,34 @@ _Imprimir_Tablas:
     ;*****************************************************************************************
     mov eax, Formato_espacio_corto
     call sprint
-    mov eax,[esi+ecx*4]  ;Traemos a EAX el numero del arreglo recibido
+    mov eax,[esi+ecx*4]
     call iprint
     mov eax, Formato_espacio_largo
     call sprint
-    mov eax,[edi+ecx*4]  ;Traemos a EAX el numero del arreglo recibido
+    mov eax,[edi+ecx*4]
     call iprint
     mov eax, Formato_espacio_largo
     call sprint
-    mov eax,[ebx+ecx*4]  ;Traemos a EAX el numero del arreglo recibido
+    mov eax,[ebx+ecx*4]
     call iprintLF
 
     ;*****************************************************************************************
-    inc ecx               ;incrementamos indice de array
-    dec edx               ;decrementamos contador
-    cmp edx,0             ;llegamos a 0?
-    jne ciclo_imprimir_tablas   ;ciclar en caso de no llegar a cero
+    inc ecx
+    dec edx
+    cmp edx,0
+    jne ciclo_imprimir_tablas   ;clico para recorrer el arreglo
 
 
   mov eax, Formatos_final
   call sprint
   call _Menu
+
+; 1 punto imprimir los arreglos juntos pero separados jajajaja
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+;BLOQUE 4.5
 _Guardar_Archivo:
+  call _Funcion_Acomodar_salida
   mov eax, Ingresa_Nombre_Archivo
   call sprint
   mov ecx,filename
@@ -396,6 +448,44 @@ _Guardar_Archivo:
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ;//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+_Funcion_Acomodar_salida:
+  mov esi, arreglo_datos_recibidos
+  mov edi, arreglo_operacion_linea
+  mov ebx, arreglo_operacion_curva
+  mov ecx, 0
+  mov edx, 1
+
+
+  ciclo_convertir_enteros:
+    ;*****************************************************************************************
+
+    mov eax,[edi+ecx*4]
+    call iprint
+    call itoa
+
+    ;
+    ;
+    ; no pude realizar una conversion y guardado....
+    ; mi idea era guardarlo ya formateados la operacion de curva y la operacion de linea en el arreglo de datos
+    ; recibidos para despues imprimir los dos resulktados en un mismo archivos
+    ;
+    ; pero no me salio.... (T.T)
+    ;
+
+
+    ;*****************************************************************************************
+    inc ecx
+    dec edx
+    cmp ecx,3
+    jne ciclo_convertir_enteros   ;clico para recorrer el arreglo
+
+
+  mov eax, Formatos_final
+  call sprint
+
+ret
+
 _salir:
   mov eax, Gracias
   call sprintLF
